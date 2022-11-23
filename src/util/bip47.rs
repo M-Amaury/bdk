@@ -104,7 +104,7 @@ impl PaymentCode {
         Address::p2pkh(
             &bitcoin::PublicKey {
                 compressed: true,
-                key: self.derive(secp, 0),
+                inner: self.derive(secp, 0),
             },
             network,
         )
@@ -126,7 +126,7 @@ impl PaymentCode {
             child_number: bip32::ChildNumber::Normal { index: 0 },
             public_key: bitcoin::PublicKey {
                 compressed: true,
-                key: self.public_key,
+                inner: self.public_key,
             },
             chain_code: self.chain_code,
         }
@@ -184,12 +184,12 @@ impl FromStr for PaymentCode {
 pub struct Bip47Notification<K: DerivableKey<Legacy>>(pub K);
 
 impl<K: DerivableKey<Legacy>> DescriptorTemplate for Bip47Notification<K> {
-    fn build(self) -> Result<DescriptorTemplateOut, DescriptorError> {
+    fn build(self, _network : Network) -> Result<DescriptorTemplateOut, DescriptorError> {
         P2Pkh((
             self.0,
             bip32::DerivationPath::from_str("m/47'/0'/0'").unwrap(),
         ))
-        .build()
+        .build(_network)
     }
 }
 
@@ -391,7 +391,7 @@ impl<'w, D: BatchDatabase> Bip47Wallet<'w, D> {
 
         let wallet = Wallet::new(
             P2Pkh(bitcoin::PrivateKey {
-                key: sk,
+                inner: sk,
                 compressed: true,
                 network,
             }),
@@ -426,7 +426,7 @@ impl<'w, D: BatchDatabase> Bip47Wallet<'w, D> {
 
         let wallet = Wallet::new(
             P2Pkh(bitcoin::PublicKey {
-                key: pk,
+                inner: pk,
                 compressed: true,
             }),
             None,
